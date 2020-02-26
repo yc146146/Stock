@@ -1,0 +1,77 @@
+import baostock as bs
+import pandas as pd
+
+
+
+def main(stock_code):
+
+
+	#### 获取沪深A股历史K线数据 ####
+	# 详细指标参数，参见“历史行情指标参数”章节；“分钟线”参数与“日线”参数不同。
+	# 分钟线指标：date,time,code,open,high,low,close,volume,amount,adjustflag
+	# adjustflag：复权类型，
+	# 默认不复权：3
+	# 1：后复权
+	# 2：前复权。
+	# 已支持分钟线、日线、周线、月线前后复权。
+	
+	rs = bs.query_history_k_data_plus(stock_code,
+	    "date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,isST,pctChg,pbMRQ,peTTM,psTTM,pcfNcfTTM",
+	    start_date='1960-01-01',
+	    end_date='2020-02-14',
+	    frequency="d", adjustflag="2")
+
+
+	# rs = bs.query_history_k_data_plus(stock_code,
+	#     "date,code,open,high,low,close,volume,amount,adjustflag,turn,pctChg",
+	#     start_date='1960-01-01',
+	#      end_date='2020-02-14',
+	#     frequency="m", adjustflag="2")
+
+	print('query_history_k_data_plus respond error_code:'+rs.error_code)
+	print('query_history_k_data_plus respond  error_msg:'+rs.error_msg)
+
+	#### 打印结果集 ####
+	data_list = []
+	while (rs.error_code == '0') & rs.next():
+	    # 获取一条记录，将记录合并在一起
+	    data_list.append(rs.get_row_data())
+	result = pd.DataFrame(data_list, columns=rs.fields)
+
+	
+
+	#### 结果集输出到csv文件 ####   
+	result.to_csv("./baostock_data/股票/"+stock_code+"_day_qfq.csv", index=False)
+	# print(result)
+
+
+
+if __name__ == '__main__':
+
+
+	all_stock_code_pd = pd.read_csv("./所有股票/baostock_all.csv", encoding="gbk")
+	all_stock_code_list = all_stock_code_pd["code"].values
+
+
+	# all_stock_code_list = ["sz.000507"]
+
+	# print(all_stock_code_list)
+
+	#### 登陆系统 ####
+	lg = bs.login()
+	# 显示登陆返回信息
+	print('login respond error_code:'+lg.error_code)
+	print('login respond  error_msg:'+lg.error_msg)
+
+	# stock_code = "sz.000507"
+
+	# stock_list = ["sh.000001"]
+
+	# all_stock_code_list = ["sh.600074", "sh.600119"]
+	for stock_code in all_stock_code_list:
+		main(stock_code)
+
+
+
+	#### 登出系统 ####
+	bs.logout()
