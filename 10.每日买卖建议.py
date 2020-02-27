@@ -56,7 +56,8 @@ def out_time(stock_pd, main_data, stock_code):
 	out_pcfNcfTTM_up = stock_data["out_pcfNcfTTM_up"].values[0]
 
 
-	if float(stock_pd["pbMRQ"]) > out_pbMRQ and float(stock_pd["psTTM"]) > out_psTTM:
+	# if float(stock_pd["pbMRQ"]) > out_pbMRQ and float(stock_pd["psTTM"]) > out_psTTM:
+	if float(stock_pd["pbMRQ"]) < out_pbMRQ and float(stock_pd["psTTM"]) < out_psTTM:
 		return 1
 	else:
 		return 0
@@ -84,6 +85,20 @@ def industry_analysis(today_data, today_date):
 	industry_list = industry_volume_sort.index
 	# print(group_detail.index)
 
+	industry_volume_item = {}
+	for i, industry in enumerate(industry_list):
+		industry_volume_item[industry] = i+1
+
+	industry_peTTM_median_sort = industry_group_info['peTTM']['median'].sort_values(ascending=False).index
+
+	industry_peTTM_median_item = {}
+	for i, industry in enumerate(industry_peTTM_median_sort):
+		industry_peTTM_median_item[industry] = i+1
+
+	# print(industry_peTTM_median_item)
+
+
+
 	today_industry_info_pd = pd.DataFrame(columns=columns)
 
 	for industry in industry_list:
@@ -93,7 +108,8 @@ def industry_analysis(today_data, today_date):
 		today_industry_info_pd = today_industry_info_pd.append(pd.Series(data_list, index=columns), ignore_index=True)
 
 
-	return today_industry_info_pd
+
+	return today_industry_info_pd, industry_peTTM_median_item, industry_volume_item
 
 if __name__ == '__main__':
 		# today_stock_info_pd = today_stock_info_pd.reset_index(drop=True)
@@ -102,43 +118,44 @@ if __name__ == '__main__':
 	# today_date = "2020-02-22"
 	today_date = str(datetime.datetime.now().date())
 
-	today_stock_info_pd = pd.read_csv("../数据文件/每日股价表/"+today_date+".csv", encoding="gbk")
+	today_stock_info_pd = pd.read_csv("./数据文件/每日股价表/"+today_date+".csv", encoding="gbk")
 	# today_stock_info_pd = pf.read_csv("./每日股价表/2020-02-22.csv")
 
-	industry_group_info = industry_analysis(today_stock_info_pd, today_date)
+	industry_group_info, industry_peTTM_median_item, industry_volume_item = industry_analysis(today_stock_info_pd, today_date)
+
 
 	industry_group_info = industry_group_info.set_index("industry")
 
 	# print(industry_group_info)
 	# 保存行业数据分析数据
-	industry_group_info.to_csv("../数据文件/行业数据分析/每日/"+today_date+".csv", encoding="gbk")
+	industry_group_info.to_csv("./数据文件/行业数据分析/每日/"+today_date+".csv", encoding="gbk")
 
 	#分析行业交易量排名
 	# industry_volume_sort = industry_group_info["volume_mean"].sort_values(ascending=False).index
-	industry_volume_sort = industry_group_info["volume_mean"].index
+	# industry_volume_sort = industry_group_info["volume_mean"].index
 	# industry_volume_sort = industry_group_info["industry"].values
 
 	# print(industry_volume_sort)
 
-	industry_volume_item = {}
-	for i, industry in enumerate(industry_volume_sort):
-		industry_volume_item[industry] = i+1
+	# industry_volume_item = {}
+	# for i, industry in enumerate(industry_volume_sort):
+	# 	industry_volume_item[industry] = i+1
 
 	# print(industry_volume_item)
 
 	#获取行数
 	row_count = today_stock_info_pd.shape[0]
 
-	in_stock_pd = pd.DataFrame(columns=['date', 'code', 'industry', 'industry_volume_sort', 'open', 'high', 'low', 'close', 'preclose',
+	in_stock_pd = pd.DataFrame(columns=['date', 'code', 'industry', 'industry_volume_sort', 'industry_peTTM_median_sort','open', 'high', 'low', 'close', 'preclose',
 	 'volume', 'amount', 'adjustflag', 'turn', 'tradestatus', 'isST', 'pctChg', 'pbMRQ', 'peTTM', 'psTTM', 'pcfNcfTTM',
 	 'industry_pbMRQ_mean','industry_pbMRQ_median','industry_peTTM_mean','industry_peTTM_median','industry_psTTM_mean','industry_psTTM_median','industry_pcfNcfTTM_mean','industry_pcfNcfTTM_median'])
 
-	out_stock_pd = pd.DataFrame(columns=['date', 'code', 'industry', 'industry_volume_sort', 'open', 'high', 'low', 'close', 'preclose',
+	out_stock_pd = pd.DataFrame(columns=['date', 'code', 'industry', 'industry_volume_sort', 'industry_peTTM_median_sort','open', 'high', 'low', 'close', 'preclose',
 	 'volume', 'amount', 'adjustflag', 'turn', 'tradestatus', 'isST', 'pctChg', 'pbMRQ', 'peTTM', 'psTTM', 'pcfNcfTTM',
 	 'industry_pbMRQ_mean','industry_pbMRQ_median','industry_peTTM_mean','industry_peTTM_median','industry_psTTM_mean','industry_psTTM_median','industry_pcfNcfTTM_mean','industry_pcfNcfTTM_median'])
 
 
-	main_data = pd.read_csv("../数据文件/股票关键数据/true.csv", encoding="gbk")
+	main_data = pd.read_csv("./数据文件/股票关键数据/true.csv", encoding="gbk")
 	# main_data = all_stock_code_pd
 
 	#买入时机
@@ -157,6 +174,8 @@ if __name__ == '__main__':
 			stock_industry = main_data[main_data["stock_code"] == stock_code]["stock_industry"].values[0]
 			in_stock_temp_pd["industry"] = stock_industry
 			in_stock_temp_pd["industry_volume_sort"] = industry_volume_item[stock_industry]
+			in_stock_temp_pd["industry_peTTM_median_sort"] = industry_peTTM_median_item[stock_industry]
+
 
 			in_stock_temp_pd["industry_pbMRQ_mean"] = industry_group_info["pbMRQ_mean"].loc[stock_industry]
 			in_stock_temp_pd["industry_pbMRQ_median"] = industry_group_info["pbMRQ_median"].loc[stock_industry]
@@ -169,12 +188,12 @@ if __name__ == '__main__':
 			
 			# print(in_stock_temp_pd)
 			in_stock_pd = in_stock_pd.append(in_stock_temp_pd, ignore_index=True)
-			in_stock_pd.to_csv("../数据文件/建议买入/"+today_date+".csv", index=False, encoding="gbk")
+			in_stock_pd.to_csv("./数据文件/建议买入/"+today_date+".csv", index=False, encoding="gbk")
 	# print(in_stock_pd)
 
 
 	#判断卖出时机
-	my_stock_pd = pd.read_csv("../数据文件/已买入/stock_code.csv")
+	my_stock_pd = pd.read_csv("./数据文件/已买入/stock_code.csv")
 
 	# print(my_stock_pd)
 
@@ -195,6 +214,8 @@ if __name__ == '__main__':
 				stock_industry = main_data[main_data["stock_code"] == stock_code]["stock_industry"].values[0]
 				out_stock_temp_pd["industry"] = stock_industry
 				out_stock_temp_pd["industry_volume_sort"] = industry_volume_item[stock_industry]
+				out_stock_temp_pd["industry_peTTM_median_sort"] = industry_peTTM_median_item[stock_industry]
+
 
 				out_stock_temp_pd["industry_pbMRQ_mean"] = industry_group_info["pbMRQ_mean"].loc[stock_industry]
 				out_stock_temp_pd["industry_pbMRQ_median"] = industry_group_info["pbMRQ_median"].loc[stock_industry]
@@ -205,12 +226,12 @@ if __name__ == '__main__':
 				out_stock_temp_pd["industry_pcfNcfTTM_mean"] = industry_group_info["pbMRQ_mean"].loc[stock_industry]
 				out_stock_temp_pd["industry_pcfNcfTTM_median"] = industry_group_info["pbMRQ_median"].loc[stock_industry]
 
-				out_stock_temp_pd = out_stock_temp_pd.reindex(columns=['date', 'code', 'industry', 'industry_volume_sort', 'open', 'high', 'low', 'close', 'preclose',
+				out_stock_temp_pd = out_stock_temp_pd.reindex(columns=['date', 'code', 'industry', 'industry_volume_sort', 'industry_peTTM_median_sort', 'open', 'high', 'low', 'close', 'preclose',
 					 'volume', 'amount', 'adjustflag', 'turn', 'tradestatus', 'isST', 'pctChg', 'pbMRQ', 'peTTM', 'psTTM', 'pcfNcfTTM',
 					 'industry_pbMRQ_mean','industry_pbMRQ_median','industry_peTTM_mean','industry_peTTM_median','industry_psTTM_mean','industry_psTTM_median','industry_pcfNcfTTM_mean','industry_pcfNcfTTM_median'])
 				out_stock_pd = pd.concat([out_stock_pd,out_stock_temp_pd])
 
-				out_stock_pd.to_csv("../数据文件/建议卖出/"+today_date+".csv", index=False, encoding="gbk")
+				out_stock_pd.to_csv("./数据文件/建议卖出/"+today_date+".csv", index=False, encoding="gbk")
 
 
 	if in_stock_pd.empty:

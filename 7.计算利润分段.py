@@ -60,19 +60,22 @@ if __name__ == '__main__':
 	# all_stock_code_pd = pd.read_csv("./所有股票/baostock_all.csv", encoding="gbk")
 	# stock_code_list = all_stock_code_pd["code"].values[0:2]
 
-	all_stock_code_pd = pd.read_csv("./股票关键数据/true.csv", encoding="gbk")
+	all_stock_code_pd = pd.read_csv("./数据文件/股票关键数据/true.csv", encoding="gbk")
 	stock_code_list = all_stock_code_pd["stock_code"].values
 
 	#投入资金
 	init_money = 100000
 
-	profit_file = open("./计算利润分段/res.csv", "w",encoding="gbk")
-	profit_file.write("股票代码,买入日期,卖出日期,共计天数,初始金额,实际使用资金,未使用资金,购买股数,买入价格,卖出价格,收益,利润,结余,是否进行了交易\n")
+	profit_file = open("./数据文件/计算利润分段/res.csv", "w",encoding="gbk")
+	profit_file.write("股票代码,行业分类,买入日期,卖出日期,共计天数,初始金额,实际使用资金,未使用资金,购买股数,买入价格,卖出价格,收益,利润,结余,是否进行了交易\n")
 
 	for stock_code in stock_code_list:
 		print("stock_code", stock_code)
-		stock_in_pd = pd.read_csv("./预测结果表/"+stock_code+"_in.csv")
-		stock_out_pd = pd.read_csv("./预测结果表/"+stock_code+"_out.csv")
+
+		industry = all_stock_code_pd[all_stock_code_pd["stock_code"] == stock_code]["stock_industry"].values[0]                 
+
+		stock_in_pd = pd.read_csv("./数据文件/预测结果表/"+stock_code+"_in.csv")
+		stock_out_pd = pd.read_csv("./数据文件/预测结果表/"+stock_code+"_out.csv")
 
 
 		# print(stock_in_pd["date"][0])
@@ -131,7 +134,7 @@ if __name__ == '__main__':
 				# print(in_price)
 				# print(out_price)
 
-				profit_file.write("%s,%s,%s,%d,%f,%f,%f,%d,%f,%f,%f,%f,%f,%d\n"%(stock_code,date_data["in"],date_data["out"],day_num,init_money,use_money,no_use_money,stock_num,in_price,out_price,income_money,profit_money,total_money,1))
+				profit_file.write("%s,%s,%s,%s,%d,%f,%f,%f,%d,%f,%f,%f,%f,%f,%d\n"%(stock_code,industry,date_data["in"],date_data["out"],day_num,init_money,use_money,no_use_money,stock_num,in_price,out_price,income_money,profit_money,total_money,1))
 
 
 				# print("date_data", date_data["out"])
@@ -139,7 +142,7 @@ if __name__ == '__main__':
 				# print("盈利", profit_money)
 		else:
 			# print("空的")
-			profit_file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d\n"%(stock_code,"","","","","","","","","","","","",0))
+			profit_file.write("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%d\n"%(stock_code,"","","","","","","","","","","","","",0))
 
 	profit_file.close()
 

@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
 	# stock_code_list = ["sz.000507", "sz.002269"]
 
-	all_stock_code_pd = pd.read_csv("../数据文件/股票关键数据/true.csv", encoding="gbk")
+	all_stock_code_pd = pd.read_csv("./数据文件/股票关键数据/true.csv", encoding="gbk")
 	stock_code_list = all_stock_code_pd["stock_code"].values
 
 	print("共有:", len(stock_code_list))
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
 	#### 结果集输出到csv文件 ####   
 	print(today_stock_info_pd)
-	today_stock_info_pd.to_csv("../数据文件/每日股价表/"+today_date+".csv", index=False, encoding="gbk")
+	today_stock_info_pd.to_csv("./数据文件/每日股价表/"+today_date+".csv", index=False, encoding="gbk")
 
 
 
